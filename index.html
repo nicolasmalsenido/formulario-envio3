@@ -210,15 +210,7 @@ select:disabled{background:#f0f2f7;color:var(--muted);cursor:not-allowed}
     </div>
     <div class="suc-info" id="sucInfo">
       <div class="suc-row"><span class="suc-lbl">🏪 Sucursal</span><span class="suc-val" id="sucNombre"></span></div>
-      <div class="suc-row"><span class="suc-lbl">📍 Dirección</span><span class="suc-val" id="sucDireccion"></span></div>
-    </div>
-    <div class="field" id="campoCPSucursal" style="display:none">
-      <label>Código postal <span class="req">*</span></label>
-      <input type="text" id="cpSucursal" placeholder="Ej: 4000">
-    </div>
-    <div class="field" id="campoIndSucursal" style="display:none">
-      <label>Indicaciones para el retiro</label>
-      <input type="text" id="indicacionesSucursal" placeholder="Ej: Ir con DNI">
+      <div class="suc-row"><span class="suc-lbl">📬 Cód. postal</span><span class="suc-val" id="sucCP"></span></div>
     </div>
   </div>
 
@@ -305,10 +297,8 @@ selLoc.addEventListener('change', () => {
 selSuc.addEventListener('change', () => {
   const dato = DB.find(r=>r[0]===selProv.value&&r[1]===selLoc.value&&r[2]===selSuc.value);
   if (dato) {
-    document.getElementById('sucNombre').textContent    = dato[2];
-    document.getElementById('sucDireccion').textContent = dato[3] || '';
-    document.getElementById('campoCPSucursal').style.display = '';
-    document.getElementById('campoIndSucursal').style.display = '';
+    document.getElementById('sucNombre').textContent = dato[2];
+    document.getElementById('sucCP').textContent     = dato[4];
     document.getElementById('sucInfo').classList.add('visible');
   }
 });
@@ -325,7 +315,6 @@ function mostrarResumen() {
     }
   } else {
     if (!selProv.value || !selLoc.value || !selSuc.value) { alert('Elegí provincia, localidad y sucursal'); return; }
-    if (!document.getElementById('cpSucursal').value.trim()) { alert('Ingresá el código postal de la sucursal'); return; }
   }
 
   // Armar resumen
@@ -351,13 +340,10 @@ function mostrarResumen() {
   } else {
     html += fila('Provincia', selProv.value);
     html += fila('Localidad', selLoc.value);
-    html += fila('Provincia', selProv.value);
-    html += fila('Localidad', selLoc.value);
     html += fila('Sucursal', selSuc.value);
     const datoSuc = DB.find(r=>r[0]===selProv.value&&r[1]===selLoc.value&&r[2]===selSuc.value);
     html += fila('Dirección', datoSuc ? datoSuc[3] : '');
-    html += fila('Cód. postal', document.getElementById('cpSucursal').value);
-    if (document.getElementById('indicacionesSucursal').value) html += fila('Indicaciones', document.getElementById('indicacionesSucursal').value);
+    html += fila('Cód. postal', document.getElementById('sucCP').textContent);
   }
 
   document.getElementById('resumenContenido').innerHTML = html;
@@ -412,8 +398,7 @@ function confirmarEnvio() {
     localidad: tipoEnvio==='sucursal' ? selLoc.value : '',
     sucursal:  tipoEnvio==='sucursal' ? selSuc.value : '',
     direccionSuc: tipoEnvio==='sucursal' ? (()=>{const d=DB.find(r=>r[0]===selProv.value&&r[1]===selLoc.value&&r[2]===selSuc.value);return d?d[3]:'';})() : '',
-    cpSuc:        tipoEnvio==='sucursal' ? document.getElementById('cpSucursal').value : '',
-    indicacionesSuc: tipoEnvio==='sucursal' ? document.getElementById('indicacionesSucursal').value : ''
+    cpSuc:     tipoEnvio==='sucursal' ? document.getElementById('sucCP').textContent : ''
   };
 
   fetch(SCRIPT_URL, { method:'POST', mode:'no-cors', body: JSON.stringify(datos) })
